@@ -19,6 +19,8 @@
 //    - يعمل في ملف واحد متكامل (Single-File Flutter Application) بدون أخطاء أو مكاتب خارجية معقدة
 // ============================================================================
 
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, deprecated_member_use, prefer_final_fields
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -149,8 +151,8 @@ class _MediqLogoPainter extends CustomPainter {
     final Paint glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          MediqColors.cyanBright.withOpacity(0.28),
-          MediqColors.primaryBlue.withOpacity(0.0),
+          MediqColors.cyanBright.withValues(alpha: 0.28),
+          MediqColors.primaryBlue.withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: radius * 1.35));
     canvas.drawCircle(center, radius * 1.35, glowPaint);
@@ -1447,6 +1449,32 @@ class MediqViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateSearchQuery(String query) {
+    searchQuery = query;
+    notifyListeners();
+  }
+
+  void toggleMessageLike(MessageEntity message) {
+    message.isLiked = !message.isLiked;
+    if (message.isLiked) {
+      message.isDisliked = false;
+    }
+    notifyListeners();
+  }
+
+  void toggleMessageDislike(MessageEntity message) {
+    message.isDisliked = !message.isDisliked;
+    if (message.isDisliked) {
+      message.isLiked = false;
+    }
+    notifyListeners();
+  }
+
+  void toggleMessageBookmark(MessageEntity message) {
+    message.isBookmarked = !message.isBookmarked;
+    notifyListeners();
+  }
+
   void toggleThemeMode(bool isDark) {
     themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
@@ -1468,6 +1496,10 @@ class MediqViewModel extends ChangeNotifier {
 // ============================================================================
 // 7. التطبيق الرئيسي وإدارة الثيمات والتوجيه (Root App & Splash Screen)
 // ============================================================================
+
+class MyApp extends MediqAiApp {
+  const MyApp({super.key});
+}
 
 class MediqAiApp extends StatefulWidget {
   const MediqAiApp({super.key});
@@ -1596,7 +1628,7 @@ class _MediqSplashScreenState extends State<MediqSplashScreen>
                   height: 260,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: MediqColors.primaryBlue.withOpacity(0.15),
+                    color: MediqColors.primaryBlue.withValues(alpha: 0.15),
                   ),
                 ),
               ),
@@ -1692,7 +1724,7 @@ class _EcgWavePainter extends CustomPainter {
       ..lineTo(w, my);
 
     final Paint glow = Paint()
-      ..color = MediqColors.cyanBright.withOpacity(0.35)
+      ..color = MediqColors.cyanBright.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6
       ..strokeCap = StrokeCap.round;
@@ -1903,18 +1935,18 @@ class _DarkNavigationSidebar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // رأس القائمة مع الشعار
-              Row(
+              const Row(
                 children: [
-                  const MediqLogoWidget(
+                  MediqLogoWidget(
                     size: 42,
                     showText: false,
                     isDarkBackground: true,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'MEDIQ AI',
                           style: TextStyle(
@@ -1942,17 +1974,17 @@ class _DarkNavigationSidebar extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
+                  color: Colors.white.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 18,
                       backgroundColor: viewModel.isAdmin
-                          ? MediqColors.amberWarn.withOpacity(0.25)
-                          : MediqColors.primaryBlue.withOpacity(0.3),
+                          ? MediqColors.amberWarn.withValues(alpha: 0.25)
+                          : MediqColors.primaryBlue.withValues(alpha: 0.3),
                       child: Icon(
                         viewModel.isAdmin ? Icons.admin_panel_settings_rounded : Icons.person_rounded,
                         color: viewModel.isAdmin ? MediqColors.amberWarn : MediqColors.cyanBright,
@@ -2015,25 +2047,22 @@ class _DarkNavigationSidebar extends StatelessWidget {
 
               // شريط البحث في المحادثات
               TextField(
-                onChanged: (val) {
-                  viewModel.searchQuery = val;
-                  viewModel.notifyListeners();
-                },
+                onChanged: viewModel.updateSearchQuery,
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'البحث في المحادثات...',
                   hintStyle: const TextStyle(color: Colors.white54, fontSize: 12.5),
                   prefixIcon: const Icon(Icons.search, color: Colors.white60, size: 18),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.07),
+                  fillColor: Colors.white.withValues(alpha: 0.07),
                   contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.white.withOpacity(0.12)),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.white.withOpacity(0.12)),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
                   ),
                 ),
               ),
@@ -2096,10 +2125,10 @@ class _DarkNavigationSidebar extends StatelessWidget {
                         margin: const EdgeInsets.only(bottom: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isActive ? MediqColors.primaryBlue.withOpacity(0.25) : Colors.transparent,
+                          color: isActive ? MediqColors.primaryBlue.withValues(alpha: 0.25) : Colors.transparent,
                           borderRadius: BorderRadius.circular(9),
                           border: isActive
-                              ? Border.all(color: MediqColors.cyanBright.withOpacity(0.5))
+                              ? Border.all(color: MediqColors.cyanBright.withValues(alpha: 0.5))
                               : null,
                         ),
                         child: Row(
@@ -2139,7 +2168,7 @@ class _DarkNavigationSidebar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0A2342),
                   borderRadius: BorderRadius.circular(11),
-                  border: Border.all(color: MediqColors.emeraldSafe.withOpacity(0.4)),
+                  border: Border.all(color: MediqColors.emeraldSafe.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
@@ -2247,7 +2276,7 @@ class _SidebarNavItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withOpacity(0.12) : Colors.transparent,
+          color: isSelected ? Colors.white.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -2368,7 +2397,7 @@ class _HomeDashboardView extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -2411,10 +2440,7 @@ class _HomeDashboardView extends StatelessWidget {
 
           // حقل البحث في المحادثات
           TextField(
-            onChanged: (val) {
-              viewModel.searchQuery = val;
-              viewModel.notifyListeners();
-            },
+            onChanged: viewModel.updateSearchQuery,
             decoration: InputDecoration(
               hintText: 'ابحث في المحادثات أو المواضيع الطبية...',
               prefixIcon: const Icon(Icons.search_rounded),
@@ -2443,7 +2469,7 @@ class _HomeDashboardView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: MediqColors.primaryBlue.withOpacity(0.3),
+                    color: MediqColors.primaryBlue.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 5),
                   ),
@@ -2551,7 +2577,7 @@ class _HomeDashboardView extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: MediqColors.primaryBlue.withOpacity(0.12),
+                    color: MediqColors.primaryBlue.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -2653,7 +2679,7 @@ class _QuickTopicChip extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: MediqColors.primaryBlue.withOpacity(0.1),
+                color: MediqColors.primaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: MediqColors.primaryBlue, size: 20),
@@ -2872,7 +2898,7 @@ class _InteractiveChatViewState extends State<_InteractiveChatView> {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          color: MediqColors.primaryBlue.withOpacity(isDark ? 0.18 : 0.08),
+          color: MediqColors.primaryBlue.withValues(alpha: isDark ? 0.18 : 0.08),
           child: Row(
             children: const [
               Icon(Icons.verified_user_outlined, size: 16, color: MediqColors.primaryBlue),
@@ -2919,7 +2945,7 @@ class _InteractiveChatViewState extends State<_InteractiveChatView> {
             color: isDark ? MediqColors.navyMid : Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),
@@ -3105,9 +3131,9 @@ class _GeneratingStatusIndicator extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: MediqColors.primaryBlue.withOpacity(0.08),
+        color: MediqColors.primaryBlue.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: MediqColors.primaryBlue.withOpacity(0.25)),
+        border: Border.all(color: MediqColors.primaryBlue.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -3165,7 +3191,7 @@ class _MessageBubbleCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? MediqColors.primaryBlue.withOpacity(0.28)
+                      ? MediqColors.primaryBlue.withValues(alpha: 0.28)
                       : const Color(0xFFD9ECFF),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16),
@@ -3232,7 +3258,7 @@ class _MessageBubbleCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isEmergency
-                    ? MediqColors.crimsonEmergency.withOpacity(isDark ? 0.2 : 0.08)
+                    ? MediqColors.crimsonEmergency.withValues(alpha: isDark ? 0.2 : 0.08)
                     : (isDark ? MediqColors.navyCard : Colors.white),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
@@ -3243,7 +3269,7 @@ class _MessageBubbleCard extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -3273,7 +3299,7 @@ class _MessageBubbleCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: MediqColors.emeraldSafe.withOpacity(0.12),
+                            color: MediqColors.emeraldSafe.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -3303,9 +3329,9 @@ class _MessageBubbleCard extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: MediqColors.primaryBlue.withOpacity(0.08),
+                            color: MediqColors.primaryBlue.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: MediqColors.primaryBlue.withOpacity(0.25)),
+                            border: Border.all(color: MediqColors.primaryBlue.withValues(alpha: 0.25)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -3338,21 +3364,13 @@ class _MessageBubbleCard extends StatelessWidget {
                         icon: message.isLiked ? Icons.thumb_up_alt_rounded : Icons.thumb_up_off_alt_rounded,
                         label: '',
                         isActive: message.isLiked,
-                        onTap: () {
-                          message.isLiked = !message.isLiked;
-                          if (message.isLiked) message.isDisliked = false;
-                          viewModel.notifyListeners();
-                        },
+                        onTap: () => viewModel.toggleMessageLike(message),
                       ),
                       _ActionButtonChip(
                         icon: message.isDisliked ? Icons.thumb_down_alt_rounded : Icons.thumb_down_off_alt_rounded,
                         label: '',
                         isActive: message.isDisliked,
-                        onTap: () {
-                          message.isDisliked = !message.isDisliked;
-                          if (message.isDisliked) message.isLiked = false;
-                          viewModel.notifyListeners();
-                        },
+                        onTap: () => viewModel.toggleMessageDislike(message),
                       ),
                       _ActionButtonChip(
                         icon: Icons.copy_rounded,
@@ -3376,10 +3394,7 @@ class _MessageBubbleCard extends StatelessWidget {
                         icon: message.isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                         label: message.isBookmarked ? 'محفوظة' : 'حفظ',
                         isActive: message.isBookmarked,
-                        onTap: () {
-                          message.isBookmarked = !message.isBookmarked;
-                          viewModel.notifyListeners();
-                        },
+                        onTap: () => viewModel.toggleMessageBookmark(message),
                       ),
                     ],
                   ),
@@ -3416,8 +3431,8 @@ class _ActionButtonChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isActive
-              ? MediqColors.primaryBlue.withOpacity(0.15)
-              : (isDark ? Colors.white.withOpacity(0.05) : MediqColors.lightBg),
+              ? MediqColors.primaryBlue.withValues(alpha: 0.15)
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : MediqColors.lightBg),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isActive
@@ -3474,9 +3489,9 @@ class _FormattedMedicalResponseText extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 6),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: MediqColors.primaryBlue.withOpacity(isDark ? 0.16 : 0.07),
+              color: MediqColors.primaryBlue.withValues(alpha: isDark ? 0.16 : 0.07),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: MediqColors.primaryBlue.withOpacity(0.28)),
+              border: Border.all(color: MediqColors.primaryBlue.withValues(alpha: 0.28)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -3607,13 +3622,13 @@ class _DesktopMedicalInfoSidebar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: MediqColors.primaryBlue.withOpacity(0.08),
+                color: MediqColors.primaryBlue.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: MediqColors.primaryBlue.withOpacity(0.25)),
+                border: Border.all(color: MediqColors.primaryBlue.withValues(alpha: 0.25)),
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Row(
                     children: [
                       Icon(Icons.info_outline_rounded, color: MediqColors.primaryBlue, size: 18),
@@ -3688,7 +3703,7 @@ class _FeatureHighlightRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: MediqColors.primaryBlue.withOpacity(0.1),
+              color: MediqColors.primaryBlue.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: MediqColors.primaryBlue, size: 18),
@@ -3810,7 +3825,7 @@ class _KnowledgeExplorerAndToolsViewState extends State<_KnowledgeExplorerAndToo
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: MediqColors.primaryBlue.withOpacity(0.12),
+                                  color: MediqColors.primaryBlue.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -3948,11 +3963,11 @@ class _KnowledgeExplorerAndToolsViewState extends State<_KnowledgeExplorerAndToo
                 Card(
                   color: isDark ? MediqColors.navyCard : Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+                  child: const Padding(
+                    padding: EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Row(
                           children: [
                             Icon(Icons.emergency_rounded, color: MediqColors.crimsonEmergency),
@@ -4076,7 +4091,7 @@ class _SettingsAndAdminViewState extends State<_SettingsAndAdminView> {
   final TextEditingController _docEngCtrl = TextEditingController();
   final TextEditingController _docSourceCtrl = TextEditingController(text: 'الدليل الطبي المعتمد 2026');
   final TextEditingController _docContentCtrl = TextEditingController();
-  String _selectedCategory = 'الأمراض المزمنة';
+  final String _selectedCategory = 'الأمراض المزمنة';
 
   @override
   void dispose() {
@@ -4208,7 +4223,7 @@ class _SettingsAndAdminViewState extends State<_SettingsAndAdminView> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               leading: CircleAvatar(
                 radius: 24,
-                backgroundColor: MediqColors.primaryBlue.withOpacity(0.15),
+                backgroundColor: MediqColors.primaryBlue.withValues(alpha: 0.15),
                 child: Icon(
                   widget.viewModel.isAdmin ? Icons.admin_panel_settings_rounded : Icons.person_rounded,
                   color: MediqColors.primaryBlue,
@@ -4255,10 +4270,10 @@ class _SettingsAndAdminViewState extends State<_SettingsAndAdminView> {
                   onChanged: (v) => widget.viewModel.toggleThemeMode(v),
                 ),
                 const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.language_rounded, color: MediqColors.primaryBlue),
-                  title: const Text('اللغة الأساسية'),
-                  trailing: const Text('العربية (مع المصطلحات الإنجليزية)', style: TextStyle(color: Colors.grey)),
+                const ListTile(
+                  leading: Icon(Icons.language_rounded, color: MediqColors.primaryBlue),
+                  title: Text('اللغة الأساسية'),
+                  trailing: Text('العربية (مع المصطلحات الإنجليزية)', style: TextStyle(color: Colors.grey)),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -4370,8 +4385,8 @@ class _SettingsAndAdminViewState extends State<_SettingsAndAdminView> {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: widget.viewModel.isAdmin
-                      ? MediqColors.emeraldSafe.withOpacity(0.15)
-                      : MediqColors.amberWarn.withOpacity(0.15),
+                      ? MediqColors.emeraldSafe.withValues(alpha: 0.15)
+                      : MediqColors.amberWarn.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

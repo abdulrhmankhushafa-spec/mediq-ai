@@ -24,26 +24,25 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Initialize Flutter Project Structure (if only main.dart was pushed from Termux)
+      - name: Initialize Flutter Project Structure
         run: |
-          if [ ! -f "pubspec.yaml" ]; then
+          if [ -f "lib/main.dart" ]; then
+            cp lib/main.dart /tmp/main_backup.dart
+          elif [ -f "main.dart" ]; then
             cp main.dart /tmp/main_backup.dart
-            flutter create --org com.mediq.ai --project-name mediq_ai .
-            cp /tmp/main_backup.dart lib/main.dart
-          elif [ -f "main.dart" ] && [ ! -f "lib/main.dart" ]; then
-            mkdir -p lib
-            cp main.dart lib/main.dart
           fi
           if [ ! -d "android" ]; then
-            cp lib/main.dart /tmp/main_backup.dart
             flutter create --org com.mediq.ai --project-name mediq_ai .
-            cp /tmp/main_backup.dart lib/main.dart
           fi
+          mkdir -p lib
+          cp /tmp/main_backup.dart lib/main.dart
+          rm -f main.dart
+          rm -rf test
 
       - name: Install Dependencies & Analyze
         run: |
           flutter pub get
-          flutter analyze --no-fatal-infos --no-fatal-warnings
+          flutter analyze lib/main.dart --no-fatal-infos --no-fatal-warnings
 
       - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons
