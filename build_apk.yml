@@ -1,0 +1,55 @@
+name: Build MEDIQ AI Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Compile Flutter Single-File APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Initialize Flutter Project Structure (if only main.dart was pushed from Termux)
+        run: |
+          if [ ! -f "pubspec.yaml" ]; then
+            cp main.dart /tmp/main_backup.dart
+            flutter create --org com.mediq.ai --project-name mediq_ai .
+            cp /tmp/main_backup.dart lib/main.dart
+          elif [ -f "main.dart" ] && [ ! -f "lib/main.dart" ]; then
+            mkdir -p lib
+            cp main.dart lib/main.dart
+          fi
+          if [ ! -d "android" ]; then
+            cp lib/main.dart /tmp/main_backup.dart
+            flutter create --org com.mediq.ai --project-name mediq_ai .
+            cp /tmp/main_backup.dart lib/main.dart
+          fi
+
+      - name: Install Dependencies & Analyze
+        run: |
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Build Release APK
+        run: flutter build apk --release --no-tree-shake-icons
+
+      - name: Upload Ready-to-Install MEDIQ-AI.apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: MEDIQ-AI-Release-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
